@@ -18,7 +18,7 @@ And here is a simplified representation:
 ![Fanuc manipulator simplified](../images/fanuc_scheme.png)
 
 ## Forward kinematics
-We are given a joint configuration <img src="https://latex.codecogs.com/gif.latex?\vec q = \begin{bmatrix} q_1 & q_2 & q_3 & q_4 & q_5 & q_6\end{bmatrix}^T"/> and need to obtain corresponding pose of the end effector  <img src="https://latex.codecogs.com/gif.latex?T_{FK}"/> in homogeneous form.
+We are given a joint configuration <img src="https://latex.codecogs.com/gif.latex?%5Cvec%20q%20%3D%20%5Cbegin%7Bbmatrix%7D%20q_1%20%26%20q_2%20%26%20q_3%20%26%20q_4%20%26%20q_5%20%26%20q_6%5Cend%7Bbmatrix%7D%5ET"/> and need to obtain corresponding pose of the end effector  <img src="https://latex.codecogs.com/gif.latex?T_{FK}"/> in homogeneous form.
 
 The simplified representation makes the derivation of forward kinematics prety straightforward. Just follow the links:
 
@@ -26,7 +26,7 @@ The simplified representation makes the derivation of forward kinematics prety s
 
 
 ## Inverse kinematics
-We are given a pose <img src="https://latex.codecogs.com/gif.latex?T_{IK}"/> and need to find all link configurations <img src="https://latex.codecogs.com/gif.latex?\vec q_k"/> that can move effector to pose <img src="https://latex.codecogs.com/gif.latex?T_{IK}"/>
+We are given a pose <img src="https://latex.codecogs.com/gif.latex?T_{IK}"/> and need to find all link configurations <img src="https://latex.codecogs.com/gif.latex?%5Cvec%20q_k"/> that can move effector to pose <img src="https://latex.codecogs.com/gif.latex?T_{IK}"/>
 
 We shall use the Pieper’s method for that:
 
