@@ -7,22 +7,22 @@ Here is the description of how to solve Forward and Inverse Kinematics problems 
 The task is to calculate Forward and inverse kinematics for **FANUC R-2000iC/165F**
 
 Here is a diagram of the manipulator:
-![Fanuc manipulator links](images/fanuc_links.png)
+![Fanuc manipulator links](../images/fanuc_links.png)
 
 Here is a scheme with all required dimensions:
 
-![Fanuc manipulator dimensions](images/fanuc_dimensions.png)
+![Fanuc manipulator dimensions](../images/fanuc_dimensions.png)
 
 And here is a simplified representation:
 
-![Fanuc manipulator simplified](images/fanuc_scheme.png)
+![Fanuc manipulator simplified](../images/fanuc_scheme.png)
 
 ## Forward kinematics
 We are given a joint configuration <img src="https://latex.codecogs.com/gif.latex?\vec q = \begin{bmatrix} q_1 & q_2 & q_3 & q_4 & q_5 & q_6\end{bmatrix}^T"/> and need to obtain corresponding pose of the end effector  <img src="https://latex.codecogs.com/gif.latex?T_{FK}"/> in homogeneous form.
 
 The simplified representation makes the derivation of forward kinematics prety straightforward. Just follow the links:
 
-![Fanuc Forward kinematics](images/fanuc_fk.png)
+![Fanuc Forward kinematics](../images/fanuc_fk.png)
 
 
 ## Inverse kinematics
@@ -30,12 +30,12 @@ We are given a pose <img src="https://latex.codecogs.com/gif.latex?T_{IK}"/> and
 
 We shall use the Pieper’s method for that:
 
-![Fanuc Pieper's method](images/fanuc_ik_pieper.png)
+![Fanuc Pieper's method](../images/fanuc_ik_pieper.png)
 
 Let us consider position first:
 
-![Fanuc Pieper's method](images/fanuc_ik_t012.png)
+![Fanuc Pieper's method](../images/fanuc_ik_t012.png)
 
 Now, for the rotation:
 
-![Fanuc Pieper's method](images/fanuc_ik_t345.png)
+![Fanuc Pieper's method](../images/fanuc_ik_t345.png)
