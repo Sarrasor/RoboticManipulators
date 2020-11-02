@@ -7,6 +7,7 @@ Here is the description of how to solve Forward and Inverse Kinematics problems 
 The task is to calculate Forward and inverse kinematics for **FANUC R-2000iC/165F**
 
 Here is a diagram of the manipulator:
+
 ![Fanuc manipulator links](../images/fanuc_links.png)
 
 Here is a scheme with all required dimensions:
