@@ -5,9 +5,9 @@ import sympy as sp
 
 
 class SymbolicTransformation():
-    def __init__(self, sequence_string, variables=None):
+    def __init__(self, sequence_string, variables=None, simplify=False):
         self._seq = sequence_string
-        self._tokens = [s for s in re.split("([A-Z][^A-Z]*)", self._seq) if s]
+        self._tokens = SymbolicTransformation._tokens_from_sequence(self._seq)
 
         self._tfs = [sp.eye(4)] * (len(self._tokens) + 1)
         self._token_to_transform = {
@@ -23,6 +23,12 @@ class SymbolicTransformation():
             'Rxi': self.get_Rx_inv,
             'Ryi': self.get_Ry_inv,
             'Rzi': self.get_Rz_inv,
+            'Txd': self.get_Txd,
+            'Tyd': self.get_Tyd,
+            'Tzd': self.get_Tzd,
+            'Rxd': self.get_Rxd,
+            'Ryd': self.get_Ryd,
+            'Rzd': self.get_Rzd,
         }
 
         if variables is None:
@@ -46,18 +52,28 @@ class SymbolicTransformation():
 
             self._variables = variables
 
-        self._generate_transformation()
+        self._generate_transformation(simplify=simplify)
 
-    def _generate_transformation(self):
+    def _generate_transformation(self, simplify=False):
         for i, (token, var) in enumerate(zip(self._tokens, self._variables)):
             self._tfs[i + 1] = self._tfs[i] * self._from_token(token, var)
-            self._tfs[i + 1] = sp.simplify(self._tfs[i + 1])
+            if simplify:
+                self._tfs[i + 1] = sp.simplify(self._tfs[i + 1])
 
     def _from_token(self, token, variable_name):
         try:
             return self._token_to_transform[token](variable_name)
         except Exception:
             raise ValueError("Unknown token")
+
+    def valid_token(self, token):
+        if token in self._token_to_transform:
+            return True
+        return False
+
+    @staticmethod
+    def _tokens_from_sequence(sequence):
+        return [s for s in re.split("([A-Z][^A-Z]*)", sequence) if s]
 
     def __getitem__(self, i):
         return self._tfs[-1][i]
@@ -117,10 +133,26 @@ class SymbolicTransformation():
         new_vars = self._variables[::-1]
         return SymbolicTransformation(new_sequence, new_vars)
 
+    def get_rotation(self):
+        R = sp.Matrix(sp.eye(4))
+        R[:3, :3] = self.transformation[:3, :3]
+        return R
+
     def print(self):
         print()
         sp.pprint(self.transformation)
         print()
+
+    @staticmethod
+    def get_jacobian_column(J):
+        return sp.Matrix([
+            J[0, 3],
+            J[1, 3],
+            J[2, 3],
+            J[2, 1],
+            J[0, 2],
+            J[1, 0],
+        ])
 
     @staticmethod
     def get_Tx(symbol='x'):
@@ -223,6 +255,63 @@ class SymbolicTransformation():
     @staticmethod
     def get_Rz_inv(symbol='q'):
         return SymbolicTransformation.get_Rz(symbol).T
+
+    @staticmethod
+    def get_Txd(symbol='q'):
+        return sp.Matrix([
+            [0, 0, 0, 1],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+        ])
+
+    @staticmethod
+    def get_Tyd(symbol='q'):
+        return sp.Matrix([
+            [0, 0, 0, 0],
+            [0, 0, 0, 1],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+        ])
+
+    @staticmethod
+    def get_Tzd(symbol='q'):
+        return sp.Matrix([
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 1],
+            [0, 0, 0, 0],
+        ])
+
+    @staticmethod
+    def get_Rxd(symbol='q'):
+        q = sp.symbols(symbol)
+        return sp.Matrix([
+            [0.0, 0.0, 0.0, 0.0],
+            [0.0, -sp.sin(q), -sp.cos(q), 0.0],
+            [0.0, sp.cos(q), -sp.sin(q), 0.0],
+            [0.0, 0.0, 0.0, 0.0],
+        ])
+
+    @staticmethod
+    def get_Ryd(symbol='q'):
+        q = sp.symbols(symbol)
+        return sp.Matrix([
+            [-sp.sin(q), 0.0, sp.cos(q), 0.0],
+            [0.0, 0.0, 0.0, 0.0],
+            [-sp.cos(q), 0.0, -sp.sin(q), 0.0],
+            [0.0, 0.0, 0.0, 0.0],
+        ])
+
+    @staticmethod
+    def get_Rzd(symbol='q'):
+        q = sp.symbols(symbol)
+        return sp.Matrix([
+            [-sp.sin(q), -sp.cos(q), 0.0, 0.0],
+            [sp.cos(q), -sp.sin(q), 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0]
+        ])
 
 
 class Transformation():
