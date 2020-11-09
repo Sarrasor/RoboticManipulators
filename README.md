@@ -29,6 +29,14 @@ Check out `FanucJacobians.md` for the solution description:
 
 ![Fanuc simngularity](images/ballerina_singularity.png)
 
+### Jacobian Calculation
+
+`python jacobian_calculation.py`
+
+If you want to see how to use the `JacobianCalculator` class:
+
+![Jacobian calculation](images/numeric_jacobian_calculation.png)
+
 ### Symbolic Transformations
 
 `python symbolic_calculation.py`

@@ -125,7 +125,7 @@ class JacobianCalculator():
         """
         self.set_transforms(T_base, T_tool)
 
-        Rt = st(self._seq_numeric[-1]).get_rotation().T
+        Rt = st(self._seq_numeric[-1], self._variables).get_rotation().T
         Jrs = []
 
         for seq in self._seq_numeric[:-1]:
