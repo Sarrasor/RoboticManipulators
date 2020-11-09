@@ -35,7 +35,7 @@ Check out `FanucJacobians.md` for the solution description:
 
 If you want to see how to use the `JacobianCalculator` class:
 
-![Jacobian calculation](images/numeric_jacobian_calculation.png)
+![Jacobian calculation](images/jacobian_example.png)
 
 ### Symbolic Transformations
 
