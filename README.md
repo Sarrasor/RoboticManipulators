@@ -20,6 +20,15 @@ Check out `robots/FANUC165F.md` for the solution description:
 
 ![Fanuc plot](images/fanuc_plot.png)
 
+### Fanuc Jacobians
+
+`python fanuc_jacobians.py`
+
+If you want to see how to calculate Fanuc165F Jacobian matrix using Scew theory and numerical matrix differentiation methods. The singularity analysis is also presented.
+Check out `FanucJacobians.md` for the solution description:
+
+![Fanuc simngularity](images/ballerina_singularity.png)
+
 ### Symbolic Transformations
 
 `python symbolic_calculation.py`
