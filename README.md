@@ -1,5 +1,5 @@
-# Kinematics Calculation
-Calculation of Forward Kinematics (FK) and Inverse Kinematics (IK) for robotic manipulators
+# Robotic manipulators
+Calculation of Forward Kinematics (FK), Inverse Kinematics (IK), Jacobians, and trajectory generation for robotic manipulators.
 
 ## Repo contents
 
@@ -27,7 +27,47 @@ Check out `robots/FANUC165F.md` for the solution description:
 If you want to see how to calculate Fanuc165F Jacobian matrix using Scew theory and numerical matrix differentiation methods. The singularity analysis is also presented.
 Check out `FanucJacobians.md` for the solution description:
 
-![Fanuc simngularity](images/ballerina_singularity.png)
+![Fanuc singularity](images/ballerina_singularity.png)
+
+### RRR Robot trajectory planning
+
+`python rrr_robot_planning.py`
+
+If you want to see how to perform XYZ Polynomial and Trapezoidal trajectory planning for RRR Robot in Joint and Cartesian Space. Check out `TrajectoryPlanning.md` to see how the planning is done.
+
+## Polynomial profile
+
+Sample polynomial trajectory: 
+
+![Polynomial profile plots](images/polynomial_profile_plots.png)
+
+Here is how the manipulator will move:
+
+![Polynomial profile motion](images/polynomial_profile_motion.gif)
+
+## Trapezoidal profile (Joint Space)
+
+Sample trapezoidal trajectory in joint space: 
+
+![Trapezoidal profile plots](images/trapezoidal_profile_plots.png)
+
+Here is how the manipulator will move:
+
+![Trapezoidal profile motion](images/trapezoidal_profile_motion.gif)
+
+## Trapezoidal profile (Cartesian Space)
+
+Sample trapezoidal trajectory in cartesian space: 
+
+![Trapezoidal cartesian profile plots](images/trapezoidal_cartesian_profile_plots.png)
+
+Their corresponding joint space plots:
+
+![Corresponding joint profile plots](images/trapezoidal_cartesian_joint_profile_plots.png)
+
+Here is how the manipulator will move:
+
+![Trapezoidal cartesian profile motion](images/trapezoidal_cartesian_profile_motion.gif)
 
 ### Jacobian Calculation
 

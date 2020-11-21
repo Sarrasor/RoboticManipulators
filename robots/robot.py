@@ -1,6 +1,8 @@
 """
 Abstact Robot class definition
 """
+import sympy as sp
+
 from abc import ABC, abstractmethod
 
 
@@ -33,3 +35,23 @@ class Robot(ABC):
             T (4x4 array like): Homogeneous pose matrix
         """
         pass
+
+    def set_transforms(self, T_base=None, T_tool=None):
+        """
+        Updates base and tool transformations
+
+        Args:
+            T_base (None, optional): Transformation from the world frame
+                to the base frame
+            T_tool (None, optional): Transformation from the end-effector
+                frame to the tool frame
+        """
+        if T_base is None:
+            self.T_base = sp.eye(4)
+        else:
+            self.T_base = sp.Matrix(T_base)
+
+        if T_tool is None:
+            self.T_tool = sp.eye(4)
+        else:
+            self.T_tool = sp.Matrix(T_tool)

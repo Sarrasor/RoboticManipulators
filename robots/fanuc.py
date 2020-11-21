@@ -10,7 +10,7 @@ import sympy as sp
 from robots.robot import Robot
 from utils.robo_math import SymbolicTransformation as st
 from utils.robo_math import Transformation
-from utils.plot_utils import TransformationPlotter as tp
+from utils.plot_utils import TransformationPlotter
 
 
 class Fanuc165F(Robot):
@@ -60,25 +60,7 @@ class Fanuc165F(Robot):
         self.ik_data_path = Path("robots/data/fanuc_inverse_kinematics.pkl")
         self._precalculate_data()
 
-    def set_transforms(self, T_base=None, T_tool=None):
-        """
-        Updates base and tool transformations
-
-        Args:
-            T_base (None, optional): Transformation from the world frame
-                to the base frame
-            T_tool (None, optional): Transformation from the end-effector
-                frame to the tool frame
-        """
-        if T_base is None:
-            self.T_base = sp.eye(4)
-        else:
-            self.T_base = sp.Matrix(T_base)
-
-        if T_tool is None:
-            self.T_tool = sp.eye(4)
-        else:
-            self.T_tool = sp.Matrix(T_tool)
+        self._tp = TransformationPlotter()
 
     def _generate_value_pairs(self):
         """
@@ -179,7 +161,7 @@ class Fanuc165F(Robot):
 
         frames.append(frames[-1] * self.T_tool)
 
-        tp.plot_numeric_frames(frames)
+        self._tp.plot_numeric_frames(frames)
 
     def inverse_kinematics(self, T, m=1, k=1):
         """
