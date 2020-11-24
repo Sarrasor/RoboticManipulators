@@ -18,26 +18,26 @@ def main():
 
     tg = TrajectoryGenerator(dq_max, ddq_max, dx_max, ddx_max, control_freq=cf)
 
-    # # Polynomial joint trajectory
-    # q_0 = [[0.5, 0, 0], [-0.6, 0, 0], [0, 0, 0]]
-    # q_f = [[1.57, 0, 0], [0.5, 0, 0], [-2.0, 0, 0]]
-    # t_0, t_f = 0, 2
-    # qs = tg.generate_joint_poly_trajectory(q_0,
-    #                                        q_f,
-    #                                        t_f,
-    #                                        t_0=t_0,
-    #                                        n=n,
-    #                                        plot=True)
-    # robot = RRRRobot()
-    # robot.move_joints(qs)
+    # Polynomial joint trajectory
+    q_0 = [[0.5, 0, 0], [-0.6, 0, 0], [0, 0, 0]]
+    q_f = [[1.57, 0, 0], [0.5, 0, 0], [-2.0, 0, 0]]
+    t_0, t_f = 0, 2
+    qs = tg.generate_joint_poly_trajectory(q_0,
+                                           q_f,
+                                           t_f,
+                                           t_0=t_0,
+                                           n=n,
+                                           plot=True)
+    robot = RRRRobot()
+    robot.move_joints(qs)
 
-    # # Trapezoidal joint trajectory
-    # q_0 = [0.0, 0.0, 0.0]
-    # q_f = [-0.9, -2.3, 1.2]
+    # Trapezoidal joint trajectory
+    q_0 = [0.0, 0.0, 0.0]
+    q_f = [-0.9, -2.3, 1.2]
 
-    # qs = tg.generate_p2p_trajectory(q_0, q_f, n=n, plot=True)
-    # robot = RRRRobot()
-    # robot.move_joints(qs)
+    qs = tg.generate_p2p_trajectory(q_0, q_f, n=n, plot=True)
+    robot = RRRRobot()
+    robot.move_joints(qs)
 
     # Trapezoidal cartesian linear trajectory
     p_1 = [1.0, 0.0, 2.0]
