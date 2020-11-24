@@ -1,10 +1,10 @@
 # Robotic manipulators
-Calculation of Forward Kinematics (FK), Inverse Kinematics (IK), Jacobians, and trajectory generation for robotic manipulators.
+Calculation of Forward Kinematics (FK), Inverse Kinematics (IK), Jacobians, and trajectory generation (Joint Space polynomial, Joint Space P2P, Cartesian Space Linear) for robotic manipulators.
 
 ## Repo contents
 
 * `robots` - Folder with IK and FK solutions. Solution descriptions are in `.md` files
-* `utils` - Several useful utils like `SymbolicTransformation` that can help with matrix multiplication and other Robotics-related stuff 
+* `utils` - Several useful utils like `SymbolicTransformation` or `TrajectoryGenerator` that can help with matrix multiplication, planning and other Robotics-related stuff
 * `tests` - Unit tests
 
 ## How to run

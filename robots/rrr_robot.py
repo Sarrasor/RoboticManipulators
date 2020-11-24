@@ -224,6 +224,15 @@ class RRRRobot(Robot):
         self.forward_kinematics(qs[-1], plot=True)
 
     def move_via_points(self, pts):
+        """
+        Iteratively moves joints via cartesian points using IK
+
+        Args:
+            pts (np.ndarray): nx3 array, where n - is the number of points
+
+        Returns:
+            np.ndarray: Array of corresponding joint configurations
+        """
         plt.ion()
         Ts = []
         qs = []

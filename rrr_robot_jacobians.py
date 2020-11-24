@@ -1,3 +1,6 @@
+"""
+RRR Robot Jacobian calculation
+"""
 import pickle
 from pathlib import Path
 
