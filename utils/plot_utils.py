@@ -1,10 +1,39 @@
+import re
+
 import numpy as np
 import sympy as sp
 import matplotlib.pyplot as plt
+from matplotlib import rc
+
+
+class LatexRenderer():
+    @staticmethod
+    def render_equations(equations, variables):
+        rc('text', usetex=True)
+        latex_render = r'\begin{eqnarray*} '
+        for i, eq in enumerate(equations):
+            eq = sp.collect(eq[0], variables)
+            latex_text = re.sub(r'\.0|1.0| |\\left|\\right', '', sp.latex(eq))
+            latex_text = re.sub(r'\{\(t\)\}', '', latex_text)
+            latex_text = re.sub(
+                r'\\frac\{d\}\{dt\}', r'\\dot', latex_text)
+            latex_text = re.sub(
+                r'\\frac\{d\^\{2\}\}\{dt\^\{2\}\}', r'\\ddot', latex_text)
+            latex_text += f"=u_{i}(t) \\\\"
+            latex_render += latex_text
+        latex_render += r'\end{eqnarray*}'
+
+        fig = plt.figure(figsize=(20, 7))
+        fig.subplots_adjust(wspace=0.05)
+        plt.text(0.05, 0.5, latex_render, fontsize=15)
+        plt.axis('off')
+        plt.tight_layout()
+        plt.show()
 
 
 class TrajectoriesPlotter():
     def plot_joint(ts, qs, dqs, ddqs):
+        rc('text', usetex=False)
         fig, axs = plt.subplots(len(qs), 3, sharex=True, figsize=(20, 10))
         fig.suptitle("Joint Trajectories")
         labels = ["", r"\dot", r"\ddot"]
@@ -25,6 +54,7 @@ class TrajectoriesPlotter():
         plt.show()
 
     def plot_cartesian(ts, qs, dqs, ddqs):
+        rc('text', usetex=False)
         fig, axs = plt.subplots(len(qs), 3, sharex=True, figsize=(20, 10))
         fig.suptitle("Cartesian Trajectories")
         labels = ["", r"\dot", r"\ddot"]
@@ -46,6 +76,7 @@ class TrajectoriesPlotter():
         plt.show()
 
     def plot_joint_no_acc(ts, qs, dqs):
+        rc('text', usetex=False)
         fig, axs = plt.subplots(len(qs), 2, sharex=True, figsize=(20, 10))
         fig.suptitle("Joint Trajectories")
         labels = ["", r"\dot"]
@@ -62,6 +93,18 @@ class TrajectoriesPlotter():
                     axs[j].set_title(f"${label}q_{i}$")
                     axs[j].set_xlabel(f'$t (s)$')
                     axs[j].set_ylabel(f'$q (rad)$')
+        plt.tight_layout()
+        plt.show()
+
+    def plot_control(ts, us):
+        rc('text', usetex=False)
+        fig, axs = plt.subplots(len(us), sharex=True, figsize=(20, 10))
+        fig.suptitle("Joint Control")
+        for i, u in enumerate(us):
+            axs[i].plot(ts, u)
+            axs[i].set_title(f"$u_{i}$")
+            axs[i].set_xlabel(f'$t (s)$')
+            axs[i].set_ylabel(f'$u_{i}$')
         plt.tight_layout()
         plt.show()
 
@@ -113,7 +156,8 @@ class TransformationPlotter():
         if show:
             self.show()
 
-    def plot_numeric_frames(self, frames, axis_len=100, show=True):
+    def plot_numeric_frames(self, frames, axis_len=100, margin=1,
+                            center=0, fixed_scale=False, show=True):
         joint_points = []
 
         self._plot_frame(np.eye(4),
@@ -132,11 +176,15 @@ class TransformationPlotter():
             joint_points[:, 0, 0].max() - joint_points[:, 0, 0].min(),
             joint_points[:, 1, 0].max() - joint_points[:, 1, 0].min(),
             joint_points[:, 2, 0].max() - joint_points[:, 2, 0].min()
-        ]).max() / 2.0
+        ]).max() * margin
 
         mid_x = (joint_points[:, 0, 0].max() + joint_points[:, 0, 0].min()) / 2
         mid_y = (joint_points[:, 1, 0].max() + joint_points[:, 1, 0].min()) / 2
         mid_z = (joint_points[:, 2, 0].max() + joint_points[:, 2, 0].min()) / 2
+
+        if fixed_scale:
+            max_range = margin
+            mid_x = mid_y = mid_z = center
 
         self.ax.set_xlim(mid_x - max_range, mid_x + max_range)
         self.ax.set_ylim(mid_y - max_range, mid_y + max_range)

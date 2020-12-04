@@ -125,11 +125,13 @@ class JacobianCalculator():
         """
         self.set_transforms(T_base, T_tool)
 
-        Rt = st(self._seq_numeric[-1], self._variables).get_rotation().T
+        Rt = st(self._seq_numeric[-1],
+                self._variables,
+                f_of_t=self._ind).get_rotation().T
         Jrs = []
 
         for seq in self._seq_numeric[:-1]:
-            T_robot = st(seq, self._variables).transformation
+            T_robot = st(seq, self._variables, f_of_t=self._ind).transformation
             Jr = self.T_base * T_robot * self.T_tool * Rt
             Jrs.append(st.get_jacobian_column(Jr).T)
 
@@ -153,18 +155,23 @@ class JacobianCalculator():
         """
         self.set_transforms(T_base, T_tool)
 
-        w_T_n = st(self._seq_skew[-1], self._vars_skew[-1]).transformation
+        w_T_n = st(self._seq_skew[-1],
+                   self._vars_skew[-1],
+                   f_of_t=self._ind).transformation
         w_T_n = w_T_n * self.T_tool
 
         O_n = w_T_n[:3, 3]
-        w_T_0 = st(self._seq_skew[0], self._vars_skew[0]).transformation
+        w_T_0 = st(self._seq_skew[0],
+                   self._vars_skew[0],
+                   f_of_t=self._ind).transformation
         w_T_0 = self.T_base * w_T_0
 
         Ts = [w_T_0]
         Js = []
         for k in range(len(self._seq_skew) - 1):
             T = st(self._seq_skew[k + 1],
-                   self._vars_skew[k + 1]).transformation
+                   self._vars_skew[k + 1],
+                   f_of_t=self._ind).transformation
             Ts.append(self.T_base * T)
 
             # Get axis index from char

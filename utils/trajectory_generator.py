@@ -91,7 +91,7 @@ class TrajectoryGenerator():
 
         return np.array(qs).T
 
-    def generate_lin_trajectory(self, p_0, p_f, n=100, plot=True):
+    def generate_lin_trajectory(self, p_0, p_f, n=100, plot=False):
         """
         Generates linear trajectory between b_0 and p_f
 

@@ -5,10 +5,13 @@ import sympy as sp
 
 
 class SymbolicTransformation():
-    def __init__(self, sequence_string, variables=None, simplify=False):
+    def __init__(self,
+                 sequence_string,
+                 variables=None,
+                 f_of_t=None,
+                 simplify=False):
         self._seq = sequence_string
         self._tokens = SymbolicTransformation._tokens_from_sequence(self._seq)
-
         self._tfs = [sp.eye(4)] * (len(self._tokens) + 1)
         self._token_to_transform = {
             'Tx': self.get_Tx,
@@ -52,6 +55,14 @@ class SymbolicTransformation():
 
             self._variables = variables
 
+        self._f_of_t = {}
+        if f_of_t is None:
+            for var in self._variables:
+                self._f_of_t[var] = False
+        else:
+            for var, val in zip(self._variables, f_of_t):
+                self._f_of_t[var] = val
+
         self._generate_transformation(simplify=simplify)
 
     def _generate_transformation(self, simplify=False):
@@ -62,7 +73,10 @@ class SymbolicTransformation():
 
     def _from_token(self, token, variable_name):
         try:
-            return self._token_to_transform[token](variable_name)
+            f_of_t = False
+            if variable_name in self._f_of_t:
+                f_of_t = self._f_of_t[variable_name]
+            return self._token_to_transform[token](variable_name, f_of_t)
         except Exception:
             raise ValueError("Unknown token")
 
@@ -144,6 +158,15 @@ class SymbolicTransformation():
         print()
 
     @staticmethod
+    def _get_symbol(symbol, f_of_t=False):
+        if f_of_t:
+            t = sp.Symbol('t')
+            s = sp.Function(symbol)(t)
+        else:
+            s = sp.Symbol(symbol)
+        return s
+
+    @staticmethod
     def get_jacobian_column(J):
         return sp.Matrix([
             J[0, 3],
@@ -155,8 +178,20 @@ class SymbolicTransformation():
         ])
 
     @staticmethod
-    def get_Tx(symbol='x'):
-        x = sp.symbols(symbol)
+    def get_inertia_matrix(index=0):
+        Ixx = sp.symbols(f"Ixx_{index}")
+        Iyy = sp.symbols(f"Iyy_{index}")
+        Izz = sp.symbols(f"Izz_{index}")
+        Ixy = sp.symbols(f"Ixy_{index}")
+        Iyz = sp.symbols(f"Iyz_{index}")
+        Ixz = sp.symbols(f"Ixz_{index}")
+        return sp.Matrix([[Ixx, Ixy, Ixz],
+                          [Ixy, Iyy, Iyz],
+                          [Ixz, Iyz, Izz]])
+
+    @staticmethod
+    def get_Tx(symbol='x', f_of_t=False):
+        x = SymbolicTransformation._get_symbol(symbol, f_of_t)
         return sp.Matrix([
             [1, 0, 0, x],
             [0, 1, 0, 0],
@@ -165,8 +200,8 @@ class SymbolicTransformation():
         ])
 
     @staticmethod
-    def get_Tx_inv(symbol='x'):
-        x = sp.symbols(symbol)
+    def get_Tx_inv(symbol='x', f_of_t=False):
+        x = SymbolicTransformation._get_symbol(symbol, f_of_t)
         return sp.Matrix([
             [1, 0, 0, -x],
             [0, 1, 0, 0],
@@ -175,8 +210,8 @@ class SymbolicTransformation():
         ])
 
     @staticmethod
-    def get_Ty(symbol='y'):
-        y = sp.symbols(symbol)
+    def get_Ty(symbol='y', f_of_t=False):
+        y = SymbolicTransformation._get_symbol(symbol, f_of_t)
         return sp.Matrix([
             [1, 0, 0, 0],
             [0, 1, 0, y],
@@ -185,8 +220,8 @@ class SymbolicTransformation():
         ])
 
     @staticmethod
-    def get_Ty_inv(symbol='y'):
-        y = sp.symbols(symbol)
+    def get_Ty_inv(symbol='y', f_of_t=False):
+        y = SymbolicTransformation._get_symbol(symbol, f_of_t)
         return sp.Matrix([
             [1, 0, 0, 0],
             [0, 1, 0, -y],
@@ -195,8 +230,8 @@ class SymbolicTransformation():
         ])
 
     @staticmethod
-    def get_Tz(symbol='z'):
-        z = sp.symbols(symbol)
+    def get_Tz(symbol='z', f_of_t=False):
+        z = SymbolicTransformation._get_symbol(symbol, f_of_t)
         return sp.Matrix([
             [1, 0, 0, 0],
             [0, 1, 0, 0],
@@ -205,8 +240,8 @@ class SymbolicTransformation():
         ])
 
     @staticmethod
-    def get_Tz_inv(symbol='z'):
-        z = sp.symbols(symbol)
+    def get_Tz_inv(symbol='z', f_of_t=False):
+        z = SymbolicTransformation._get_symbol(symbol, f_of_t)
         return sp.Matrix([
             [1, 0, 0, 0],
             [0, 1, 0, 0],
@@ -215,8 +250,8 @@ class SymbolicTransformation():
         ])
 
     @staticmethod
-    def get_Rx(symbol='q'):
-        q = sp.symbols(symbol)
+    def get_Rx(symbol='q', f_of_t=False):
+        q = SymbolicTransformation._get_symbol(symbol, f_of_t)
         return sp.Matrix([
             [1.0, 0.0, 0.0, 0.0],
             [0.0, sp.cos(q), -sp.sin(q), 0.0],
@@ -225,8 +260,8 @@ class SymbolicTransformation():
         ])
 
     @staticmethod
-    def get_Ry(symbol='q'):
-        q = sp.symbols(symbol)
+    def get_Ry(symbol='q', f_of_t=False):
+        q = SymbolicTransformation._get_symbol(symbol, f_of_t)
         return sp.Matrix([
             [sp.cos(q), 0.0, sp.sin(q), 0.0],
             [0.0, 1.0, 0.0, 0.0],
@@ -235,8 +270,8 @@ class SymbolicTransformation():
         ])
 
     @staticmethod
-    def get_Rz(symbol='q'):
-        q = sp.symbols(symbol)
+    def get_Rz(symbol='q', f_of_t=False):
+        q = SymbolicTransformation._get_symbol(symbol, f_of_t)
         return sp.Matrix([
             [sp.cos(q), -sp.sin(q), 0.0, 0.0],
             [sp.sin(q), sp.cos(q), 0.0, 0.0],
@@ -284,8 +319,8 @@ class SymbolicTransformation():
         ])
 
     @staticmethod
-    def get_Rxd(symbol='q'):
-        q = sp.symbols(symbol)
+    def get_Rxd(symbol='q', f_of_t=False):
+        q = SymbolicTransformation._get_symbol(symbol, f_of_t)
         return sp.Matrix([
             [0.0, 0.0, 0.0, 0.0],
             [0.0, -sp.sin(q), -sp.cos(q), 0.0],
@@ -294,8 +329,8 @@ class SymbolicTransformation():
         ])
 
     @staticmethod
-    def get_Ryd(symbol='q'):
-        q = sp.symbols(symbol)
+    def get_Ryd(symbol='q', f_of_t=False):
+        q = SymbolicTransformation._get_symbol(symbol, f_of_t)
         return sp.Matrix([
             [-sp.sin(q), 0.0, sp.cos(q), 0.0],
             [0.0, 0.0, 0.0, 0.0],
@@ -304,8 +339,8 @@ class SymbolicTransformation():
         ])
 
     @staticmethod
-    def get_Rzd(symbol='q'):
-        q = sp.symbols(symbol)
+    def get_Rzd(symbol='q', f_of_t=False):
+        q = SymbolicTransformation._get_symbol(symbol, f_of_t)
         return sp.Matrix([
             [-sp.sin(q), -sp.cos(q), 0.0, 0.0],
             [sp.cos(q), -sp.sin(q), 0.0, 0.0],
@@ -358,40 +393,40 @@ class Transformation():
     def get_Rx(q):
         return sp.Matrix([
             [1.0, 0.0, 0.0, 0.0],
-            [0.0, np.cos(q), -np.sin(q), 0.0],
-            [0.0, np.sin(q), np.cos(q), 0.0],
+            [0.0, sp.cos(q), -sp.sin(q), 0.0],
+            [0.0, sp.sin(q), sp.cos(q), 0.0],
             [0.0, 0.0, 0.0, 1.0],
         ])
 
     @staticmethod
     def get_Ry(q):
         return sp.Matrix([
-            [np.cos(q), 0.0, np.sin(q), 0.0],
+            [sp.cos(q), 0.0, sp.sin(q), 0.0],
             [0.0, 1.0, 0.0, 0.0],
-            [-np.sin(q), 0.0, np.cos(q), 0.0],
+            [-sp.sin(q), 0.0, sp.cos(q), 0.0],
             [0.0, 0.0, 0.0, 1.0],
         ])
 
     @staticmethod
     def get_Rz(q):
         return sp.Matrix([
-            [np.cos(q), -np.sin(q), 0.0, 0.0],
-            [np.sin(q), np.cos(q), 0.0, 0.0],
+            [sp.cos(q), -sp.sin(q), 0.0, 0.0],
+            [sp.sin(q), sp.cos(q), 0.0, 0.0],
             [0.0, 0.0, 1.0, 0.0],
             [0.0, 0.0, 0.0, 1.0]
         ])
 
     @staticmethod
     def get_Rx_from_degrees(q):
-        return Transformation.get_Rx(np.deg2rad(q))
+        return Transformation.get_Rx(sp.deg2rad(q))
 
     @staticmethod
     def get_Ry_from_degrees(q):
-        return Transformation.get_Ry(np.deg2rad(q))
+        return Transformation.get_Ry(sp.deg2rad(q))
 
     @staticmethod
     def get_Rz_from_degrees(q):
-        return Transformation.get_Rz(np.deg2rad(q))
+        return Transformation.get_Rz(sp.deg2rad(q))
 
 
 class Point3D():
