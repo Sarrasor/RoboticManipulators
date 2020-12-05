@@ -20,6 +20,7 @@ class JacobianCalculator():
     def __init__(self,
                  sequence_string,
                  joint_indices,
+                 f_of_t=None,
                  variables=None,
                  T_base=None,
                  T_tool=None,
@@ -31,6 +32,9 @@ class JacobianCalculator():
             sequence_string (str): Transformation sequence
             joint_indices (list of bool): Mask list with True on elements with
              that are not constant
+            joint_indices (list of bool or bool): Mask list with True on
+                elements with that are functions of time. If True is provided,
+                will use joint indices to create the list automatically
             variables (None, optional): List with names of variables
             T_base (None, optional): Transformation from the world frame
                 to the base frame
@@ -55,6 +59,15 @@ class JacobianCalculator():
 
         if len(self._tokens) != len(self._ind):
             raise ValueError("Size of indices does not match")
+
+        if f_of_t is None:
+            self._f_of_t = [False] * len(self._ind)
+        elif type(f_of_t) == bool:
+            self._f_of_t = [False] * len(self._ind)
+            if f_of_t:
+                self._f_of_t = self._ind
+        else:
+            self._f_of_t = f_of_t
 
         # Generate variable names if necessary
         if variables is None:
@@ -127,11 +140,13 @@ class JacobianCalculator():
 
         Rt = st(self._seq_numeric[-1],
                 self._variables,
-                f_of_t=self._ind).get_rotation().T
+                f_of_t=self._f_of_t).get_rotation().T
         Jrs = []
 
         for seq in self._seq_numeric[:-1]:
-            T_robot = st(seq, self._variables, f_of_t=self._ind).transformation
+            T_robot = st(seq,
+                         self._variables,
+                         f_of_t=self._f_of_t).transformation
             Jr = self.T_base * T_robot * self.T_tool * Rt
             Jrs.append(st.get_jacobian_column(Jr).T)
 
@@ -157,13 +172,13 @@ class JacobianCalculator():
 
         w_T_n = st(self._seq_skew[-1],
                    self._vars_skew[-1],
-                   f_of_t=self._ind).transformation
+                   f_of_t=self._f_of_t).transformation
         w_T_n = w_T_n * self.T_tool
 
         O_n = w_T_n[:3, 3]
         w_T_0 = st(self._seq_skew[0],
                    self._vars_skew[0],
-                   f_of_t=self._ind).transformation
+                   f_of_t=self._f_of_t).transformation
         w_T_0 = self.T_base * w_T_0
 
         Ts = [w_T_0]
@@ -171,7 +186,7 @@ class JacobianCalculator():
         for k in range(len(self._seq_skew) - 1):
             T = st(self._seq_skew[k + 1],
                    self._vars_skew[k + 1],
-                   f_of_t=self._ind).transformation
+                   f_of_t=self._f_of_t).transformation
             Ts.append(self.T_base * T)
 
             # Get axis index from char

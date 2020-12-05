@@ -418,15 +418,15 @@ class Transformation():
 
     @staticmethod
     def get_Rx_from_degrees(q):
-        return Transformation.get_Rx(sp.deg2rad(q))
+        return Transformation.get_Rx(np.deg2rad(q))
 
     @staticmethod
     def get_Ry_from_degrees(q):
-        return Transformation.get_Ry(sp.deg2rad(q))
+        return Transformation.get_Ry(np.deg2rad(q))
 
     @staticmethod
     def get_Rz_from_degrees(q):
-        return Transformation.get_Rz(sp.deg2rad(q))
+        return Transformation.get_Rz(np.deg2rad(q))
 
 
 class Point3D():
