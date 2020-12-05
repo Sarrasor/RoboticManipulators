@@ -60,7 +60,7 @@ class Fanuc165F(Robot):
         self.ik_data_path = Path("robots/data/fanuc_inverse_kinematics.pkl")
         self._precalculate_data()
 
-        self._tp = TransformationPlotter()
+        # self._tp = TransformationPlotter()
 
     def _generate_value_pairs(self):
         """
@@ -146,6 +146,7 @@ class Fanuc165F(Robot):
         T = self.T_base * self._numeric_frames[-1] * self.T_tool
 
         if plot:
+            self._tp = TransformationPlotter()
             self._show_fk()
 
         return np.array(T, dtype=np.float)
@@ -156,9 +157,11 @@ class Fanuc165F(Robot):
         """
         frames = [self.T_base]
 
-        for frame in self._numeric_frames:
-            frames.append(self.T_base * frame)
+        for frame, var in zip(self._numeric_frames, self._Ts.variables):
+            if var[0] == 'q':
+                frames.append(self.T_base * frame)
 
+        frames.append(self.T_base * self._numeric_frames[-1])
         frames.append(frames[-1] * self.T_tool)
 
         self._tp.plot_numeric_frames(frames)
