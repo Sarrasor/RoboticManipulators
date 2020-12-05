@@ -280,19 +280,19 @@ class SymbolicTransformation():
         ])
 
     @staticmethod
-    def get_Rx_inv(symbol='q'):
+    def get_Rx_inv(symbol='q', f_of_t=False):
         return SymbolicTransformation.get_Rx(symbol).T
 
     @staticmethod
-    def get_Ry_inv(symbol='q'):
+    def get_Ry_inv(symbol='q', f_of_t=False):
         return SymbolicTransformation.get_Ry(symbol).T
 
     @staticmethod
-    def get_Rz_inv(symbol='q'):
+    def get_Rz_inv(symbol='q', f_of_t=False):
         return SymbolicTransformation.get_Rz(symbol).T
 
     @staticmethod
-    def get_Txd(symbol='q'):
+    def get_Txd(symbol='q', f_of_t=False):
         return sp.Matrix([
             [0, 0, 0, 1],
             [0, 0, 0, 0],
@@ -301,7 +301,7 @@ class SymbolicTransformation():
         ])
 
     @staticmethod
-    def get_Tyd(symbol='q'):
+    def get_Tyd(symbol='q', f_of_t=False):
         return sp.Matrix([
             [0, 0, 0, 0],
             [0, 0, 0, 1],
@@ -310,7 +310,7 @@ class SymbolicTransformation():
         ])
 
     @staticmethod
-    def get_Tzd(symbol='q'):
+    def get_Tzd(symbol='q', f_of_t=False):
         return sp.Matrix([
             [0, 0, 0, 0],
             [0, 0, 0, 0],
