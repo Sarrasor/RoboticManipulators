@@ -20,7 +20,7 @@ class JacobianCalculator():
     def __init__(self,
                  sequence_string,
                  joint_indices,
-                 f_of_t=None,
+                 f_of_t=True,
                  variables=None,
                  T_base=None,
                  T_tool=None,
@@ -32,7 +32,7 @@ class JacobianCalculator():
             sequence_string (str): Transformation sequence
             joint_indices (list of bool): Mask list with True on elements with
              that are not constant
-            joint_indices (list of bool or bool): Mask list with True on
+            f_of_t (list of bool or bool): Mask list with True on
                 elements with that are functions of time. If True is provided,
                 will use joint indices to create the list automatically
             variables (None, optional): List with names of variables
@@ -60,8 +60,6 @@ class JacobianCalculator():
         if len(self._tokens) != len(self._ind):
             raise ValueError("Size of indices does not match")
 
-        if f_of_t is None:
-            self._f_of_t = [False] * len(self._ind)
         elif type(f_of_t) == bool:
             self._f_of_t = [False] * len(self._ind)
             if f_of_t:
