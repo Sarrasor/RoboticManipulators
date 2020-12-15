@@ -37,7 +37,7 @@ def main():
         [0.0, 0.0],
     ])
 
-    sigma = 0.00001
+    sigma = 0.001
 
     pts0, pts1, pts2 = [], [], []
     for q in qs:
@@ -82,10 +82,10 @@ def main():
                          link_lengths=lengths_nominal,
                          offsets=offsets_nominal,
                          directions=directions,
-                         step=0.1)
+                         step=0.05)
     result_sequence, variables = mc.get_reduced_model()
 
-    for i in range(15):
+    for i in range(5):
         T_base, T_tools = mc.estimate_tool_base(qs, pts)
 
         sp.pprint(T_base)

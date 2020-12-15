@@ -5,9 +5,12 @@ Calculation of Forward Kinematics (FK), Inverse Kinematics (IK), Jacobians, Dyna
 
 * `robots` - Folder with IK and FK solutions. Solution descriptions are in `.md` files
 * `utils` - Several useful utils like `SymbolicTransformation` or `TrajectoryGenerator` that can help with matrix multiplication, planning and other Robotics-related stuff
+* `docs` - Folder with some theory
+	* `Dynamics.md` - Review of dynamic modeling of robotics manipulators
+	* `FanucJacobians.md` - Review of Jacobian calculation on the example of Fanuc manipulator
+	* `GeometricCalibration.md` - Review of geometric parameter calibration on the example of Fanuc manipulator
+	* `TrajectoryPlanning.md` - Review of trajectory planning for robotic manipulators
 * `tests` - Unit tests
-* `Dynamics.md` - Review of dynamic modeling of robotics manipulators
-* `TrajectoryPlanning.md` - Review of trajectory planning for robotic manipulators
 
 ## How to run
 
@@ -16,7 +19,7 @@ Here are several useful commands to run:
 ### RR Robot dynamic modeling
 `python rr_robot_dynamics.py`
 
-If you want to see how to model RR manipulator with gravity force and make it follow the desired trajectory. Check out `Dynamics.md` to see how it is done.
+If you want to see how to model RR manipulator with gravity force and make it follow the desired trajectory. Check out `docs/Dynamics.md` to see how it is done.
 
 #### No control
 
@@ -34,7 +37,7 @@ Control signal is applied:
 
 `python rrr_robot_planning.py`
 
-If you want to see how to perform XYZ Polynomial and Trapezoidal trajectory planning for RRR Robot in Joint and Cartesian Space. Check out `TrajectoryPlanning.md` to see how the planning is done.
+If you want to see how to perform XYZ Polynomial and Trapezoidal trajectory planning for RRR Robot in Joint and Cartesian Space. Check out `docs/TrajectoryPlanning.md` to see how the planning is done.
 
 #### Polynomial profile
 
@@ -84,7 +87,7 @@ Check out `robots/FANUC165F.md` for the solution description:
 `python fanuc_jacobians.py`
 
 If you want to see how to calculate Fanuc165F Jacobian matrix using Scew theory and numerical matrix differentiation methods. The singularity analysis is also presented.
-Check out `FanucJacobians.md` for the solution description:
+Check out `docs/FanucJacobians.md` for the solution description:
 
 ![Fanuc singularity](images/ballerina_singularity.png)
 
@@ -93,7 +96,7 @@ Check out `FanucJacobians.md` for the solution description:
 `python fanuc_calibration.py`
 
 If you want to see how it is possible to calibrate a robotic manipulator.
-Check out `GeometricCalibration.md` for the description
+Check out `docs/GeometricCalibration.md` for the solution description
 
 #### Before
 ```

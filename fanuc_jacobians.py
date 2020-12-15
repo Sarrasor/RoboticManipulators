@@ -19,6 +19,7 @@ def main():
                             variables=variables,
                             T_base=T_base,
                             T_tool=T_tool,
+                            f_of_t=False,
                             simplify=False)
 
     J_num = jc.calculate_numeric()
