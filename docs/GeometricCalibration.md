@@ -11,18 +11,18 @@ We can compare different poses of the manipulator with measurements from more ac
 The first step is to build a model of the manipulator we are calibrating.
 Here is the algorithm:
 
-![Irreducible model creation](images/irreducible_model_creation.png)
+![Irreducible model creation](../images/irreducible_model_creation.png)
 
 ### Least-squares parameters estimation
 
 The second step is to find the initial guess for parameters (which can also be acceptable as a solution). Here we do this with least-squares approach:
 
-![Initial guess](images/initial_guess.png)
+![Initial guess](../images/initial_guess.png)
 
 ### Gradient descent
 If the result on the previous step is not satisfying, we can use Gradient Descent to further minimize the cost function
 
-![Gradient Descent](images/gradient_descent.png)
+![Gradient Descent](../images/gradient_descent.png)
 
 ## Results
 
