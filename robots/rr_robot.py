@@ -33,12 +33,9 @@ class RRRobot(Robot):
             tool frame
     """
 
-    ls = (0.8, 0.8)
-    qs_lim_deg = ((-360.0, 360.0),
-                  (-360.0, 360.0),
-                  )
+    qs_lim_deg = ((-360.0, 360.0), (-360.0, 360.0))
 
-    def __init__(self, T_base=None, T_tool=None):
+    def __init__(self, T_base=None, T_tool=None, lengths=None, save=True):
         """
         Prepares all necessary values and loads pickled matrices
 
@@ -49,22 +46,31 @@ class RRRobot(Robot):
                 frame to the tool frame
         """
         self.set_transforms(T_base, T_tool)
+        self.set_lengths(lengths)
 
         self._generate_value_pairs()
         self._calculate_limits_radians()
 
-        self.fk_data_path = Path("robots/data/rr_forward_kinematics.pkl")
+        self._save = save
+        if self._save:
+            self.fk_data_path = Path("robots/data/rr_forward_kinematics.pkl")
         self._precalculate_data()
 
         self._tp = TransformationPlotter()
+
+    def set_lengths(self, lengths):
+        if lengths is None:
+            self._ls = (0.8, 0.8)
+        else:
+            self._ls = lengths
 
     def _generate_value_pairs(self):
         """
         Generates name-value tuples for sympy substitution
         """
         value_pairs = []
-        for i in range(len(self.ls)):
-            value_pairs.append((f"l_{i}", self.ls[i]))
+        for i in range(len(self._ls)):
+            value_pairs.append((f"l_{i}", self._ls[i]))
 
         self._value_pairs = value_pairs
 
@@ -79,7 +85,7 @@ class RRRobot(Robot):
         """
         Precalculates and pickles constant matrices
         """
-        if self.fk_data_path.is_file():
+        if self._save and self.fk_data_path.is_file():
             with open(self.fk_data_path, 'rb') as input:
                 self._Ts = pickle.load(input)
         else:
@@ -89,7 +95,7 @@ class RRRobot(Robot):
             self._Ts.substitute(self._value_pairs)
 
         # Save data
-        if not self.fk_data_path.is_file():
+        if self._save and not self.fk_data_path.is_file():
             with open(self.fk_data_path, 'wb') as output:
                 pickle.dump(self._Ts, output, pickle.HIGHEST_PROTOCOL)
 
@@ -133,7 +139,7 @@ class RRRobot(Robot):
         frames.append(frames[-1] * self.T_tool)
 
         self._tp.plot_numeric_frames(frames,
-                                     axis_len=self.ls[0] / 8,
+                                     axis_len=self._ls[0] / 8,
                                      margin=2,
                                      center=0,
                                      fixed_scale=True)
@@ -160,8 +166,8 @@ class RRRobot(Robot):
 
         x, y = float(T_0[0, 3]), float(T_0[1, 3])
 
-        arccos_numerator = x**2 + y**2 - self.ls[0]**2 - self.ls[1]**2
-        arccos_denominator = 2.0 * self.ls[0] * self.ls[1]
+        arccos_numerator = x**2 + y**2 - self._ls[0]**2 - self._ls[1]**2
+        arccos_denominator = 2.0 * self._ls[0] * self._ls[1]
         arccos = arccos_numerator / arccos_denominator
 
         # Check if the given position is reachable
@@ -170,8 +176,8 @@ class RRRobot(Robot):
             return np.array([0.0, 0.0])
 
         q_1 = m * np.arccos(arccos)
-        beta = np.arctan2(self.ls[1] * np.sin(m * q_1),
-                          self.ls[0] + self.ls[1] * np.cos(q_1))
+        beta = np.arctan2(self._ls[1] * np.sin(m * q_1),
+                          self._ls[0] + self._ls[1] * np.cos(q_1))
         q_0 = np.arctan2(y, x) - m * beta
 
         qs = np.array([q_0, q_1])

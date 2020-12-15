@@ -178,6 +178,17 @@ class SymbolicTransformation():
         ])
 
     @staticmethod
+    def get_scew(x, y, z, f_of_t=False):
+        x = SymbolicTransformation._get_symbol(x, f_of_t)
+        y = SymbolicTransformation._get_symbol(y, f_of_t)
+        z = SymbolicTransformation._get_symbol(z, f_of_t)
+        return sp.Matrix([
+            [0, -z, y],
+            [z, 0, -x],
+            [-y, x, 0],
+        ])
+
+    @staticmethod
     def get_inertia_matrix(index=0):
         Ixx = sp.symbols(f"Ixx_{index}")
         Iyy = sp.symbols(f"Iyy_{index}")
@@ -350,6 +361,108 @@ class SymbolicTransformation():
 
 
 class Transformation():
+    def __init__(self, sequence_string, values):
+        self._seq = sequence_string
+        self._tokens = self._tokens_from_sequence(self._seq)
+        self._tfs = [sp.eye(4)] * (len(self._tokens) + 1)
+        self._token_to_transform = {
+            'Tx': self.get_Tx,
+            'Ty': self.get_Ty,
+            'Tz': self.get_Tz,
+            'Rx': self.get_Rx,
+            'Ry': self.get_Ry,
+            'Rz': self.get_Rz,
+            'Txi': self.get_Tx_inv,
+            'Tyi': self.get_Ty_inv,
+            'Tzi': self.get_Tz_inv,
+            'Rxi': self.get_Rx_inv,
+            'Ryi': self.get_Ry_inv,
+            'Rzi': self.get_Rz_inv,
+            'Txd': self.get_Txd,
+            'Tyd': self.get_Tyd,
+            'Tzd': self.get_Tzd,
+            'Rxd': self.get_Rxd,
+            'Ryd': self.get_Ryd,
+            'Rzd': self.get_Rzd,
+        }
+
+        if len(values) != len(self._tokens):
+            raise ValueError("Transformation and values sizes do not match")
+
+        self._values = values
+        self._generate_transformation()
+
+    def _generate_transformation(self, simplify=False):
+        for i, (token, value) in enumerate(zip(self._tokens, self._values)):
+            self._tfs[i + 1] = self._tfs[i] * self._from_token(token, value)
+
+    def _from_token(self, token, value):
+        try:
+            return self._token_to_transform[token](value)
+        except Exception:
+            raise ValueError("Unknown token")
+
+    def valid_token(self, token):
+        if token in self._token_to_transform:
+            return True
+        return False
+
+    @staticmethod
+    def _tokens_from_sequence(sequence):
+        return [s for s in re.split("([A-Z][^A-Z]*)", sequence) if s]
+
+    @property
+    def transformation(self):
+        return self._tfs[-1]
+
+    def inv(self):
+        new_sequence = ""
+        for token in self._tokens[::-1]:
+            if token[-1] == 'i':
+                new_sequence += token[:-1]
+            else:
+                new_sequence += (token + "i")
+
+        new_values = self._values[::-1]
+        return Transformation(new_sequence, new_values)
+
+    @staticmethod
+    def get_jacobian_column(J):
+        return sp.Matrix([
+            J[0, 3],
+            J[1, 3],
+            J[2, 3],
+            J[2, 1],
+            J[0, 2],
+            J[1, 0],
+        ])
+
+    @staticmethod
+    def get_scew(x, y, z):
+        return sp.Matrix([
+            [0, -z, y],
+            [z, 0, -x],
+            [-y, x, 0],
+        ])
+
+    @staticmethod
+    def get_angles(R):
+        if R[2, 0] != 1:
+            z = np.arctan2(R[2, 1], R[2, 2])
+            x = np.arctan2(R[1, 0], R[0, 0])
+            if R[2, 2] != 0:
+                y = np.arctan2(R[2, 0], R[2, 2] / np.cos(z))
+            else:
+                if R[1, 1] != 0:
+                    y = np.arctan2(-np.cos(x) * R[2, 0], R[0, 0])
+                elif R[1, 0] != 0:
+                    y = np.arctan2(-np.sin(x) * R[2, 0], R[1, 0])
+        else:
+            y = np.arcsin(R[2, 0])
+            x = 0
+            z = np.arctan2(R[0, 1], R[0, 2])
+        return x, y, z
+
     @staticmethod
     def get_Tx(x):
         return sp.Matrix([
@@ -417,6 +530,18 @@ class Transformation():
         ])
 
     @staticmethod
+    def get_Rx_inv(q):
+        return Transformation.get_Rx(q).T
+
+    @staticmethod
+    def get_Ry_inv(q):
+        return Transformation.get_Ry(q).T
+
+    @staticmethod
+    def get_Rz_inv(q):
+        return Transformation.get_Rz(q).T
+
+    @staticmethod
     def get_Rx_from_degrees(q):
         return Transformation.get_Rx(np.deg2rad(q))
 
@@ -427,6 +552,60 @@ class Transformation():
     @staticmethod
     def get_Rz_from_degrees(q):
         return Transformation.get_Rz(np.deg2rad(q))
+
+    @staticmethod
+    def get_Txd(x):
+        return sp.Matrix([
+            [0, 0, 0, 1],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+        ])
+
+    @staticmethod
+    def get_Tyd(y):
+        return sp.Matrix([
+            [0, 0, 0, 0],
+            [0, 0, 0, 1],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+        ])
+
+    @staticmethod
+    def get_Tzd(z):
+        return sp.Matrix([
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 1],
+            [0, 0, 0, 0],
+        ])
+
+    @staticmethod
+    def get_Rxd(q):
+        return sp.Matrix([
+            [0.0, 0.0, 0.0, 0.0],
+            [0.0, -np.sin(q), -np.cos(q), 0.0],
+            [0.0, np.cos(q), -np.sin(q), 0.0],
+            [0.0, 0.0, 0.0, 0.0],
+        ])
+
+    @staticmethod
+    def get_Ryd(q):
+        return sp.Matrix([
+            [-np.sin(q), 0.0, np.cos(q), 0.0],
+            [0.0, 0.0, 0.0, 0.0],
+            [-np.cos(q), 0.0, -np.sin(q), 0.0],
+            [0.0, 0.0, 0.0, 0.0],
+        ])
+
+    @staticmethod
+    def get_Rzd(q):
+        return sp.Matrix([
+            [-np.sin(q), -np.cos(q), 0.0, 0.0],
+            [np.cos(q), -np.sin(q), 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0]
+        ])
 
 
 class Point3D():

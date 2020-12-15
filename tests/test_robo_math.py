@@ -197,6 +197,17 @@ class TestRoboMathModule(unittest.TestCase):
         self.assertEqual(str(T[1, 3]), "y")
         self.assertEqual(T[2, 3], 2)
 
+    def test_transformation_sequence_translations(self):
+        variables = [1.0, 1.2, 0.7]
+        seq = "TxTyTz"
+
+        tf = Transformation(seq, variables)
+        T = tf.transformation
+
+        self.assertEqual(T[0, 3], 1.0)
+        self.assertEqual(T[1, 3], 1.2)
+        self.assertEqual(T[2, 3], 0.7)
+
 
 if __name__ == '__main__':
     unittest.main()

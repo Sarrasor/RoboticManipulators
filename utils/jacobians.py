@@ -3,6 +3,7 @@ JacobianCalculator class definition
 """
 import sympy as sp
 from utils.robo_math import SymbolicTransformation as st
+from utils.robo_math import Transformation as tf
 
 
 class JacobianCalculator():
@@ -134,18 +135,25 @@ class JacobianCalculator():
         Returns:
             sp.Matrix: Calculated Jacobian matirx
         """
-        self.set_transforms(T_base, T_tool)
+        if T_base is None:
+            T_base = self.T_base
 
-        Rt = st(self._seq_numeric[-1],
-                self._variables,
-                f_of_t=self._f_of_t).get_rotation().T
+        if T_tool is None:
+            T_tool = self.T_tool
+
+        T_robot = st(self._seq_numeric[-1],
+                     self._variables,
+                     f_of_t=self._f_of_t).transformation
+        R = T_base * T_robot * T_tool
+        R[0, 3] = R[1, 3] = R[2, 3] = 0.0
+        Rt = R.T
+
         Jrs = []
-
         for seq in self._seq_numeric[:-1]:
-            T_robot = st(seq,
-                         self._variables,
-                         f_of_t=self._f_of_t).transformation
-            Jr = self.T_base * T_robot * self.T_tool * Rt
+            T_diff = st(seq,
+                        self._variables,
+                        f_of_t=self._f_of_t).transformation
+            Jr = T_base * T_diff * T_tool * Rt
             Jrs.append(st.get_jacobian_column(Jr).T)
 
         if self.simplify:
@@ -154,6 +162,26 @@ class JacobianCalculator():
             res = sp.Matrix(Jrs).T
 
         return res
+
+    def calculate_numerically(self, values, T_base=None, T_tool=None):
+        if T_base is None:
+            T_base = self.T_base
+
+        if T_tool is None:
+            T_tool = self.T_tool
+
+        T_robot = tf(self._seq_numeric[-1], values).transformation
+        R = T_base * T_robot * T_tool
+        R[0, 3] = R[1, 3] = R[2, 3] = 0.0
+        Rt = R.T
+
+        Jrs = []
+        for sequence in self._seq_numeric[:-1]:
+            T_diff = tf(sequence, values).transformation
+            Jr = T_base * T_diff * T_tool * Rt
+            Jrs.append(tf.get_jacobian_column(Jr).T)
+
+        return sp.Matrix(Jrs).T
 
     def calculate_scew(self, T_base=None, T_tool=None):
         """
@@ -166,26 +194,29 @@ class JacobianCalculator():
         Returns:
             sp.Matrix: Calculated Jacobian matirx
         """
-        self.set_transforms(T_base, T_tool)
+        if T_base is None:
+            T_base = self.T_base
+
+        if T_tool is None:
+            T_tool = self.T_tool
 
         w_T_n = st(self._seq_skew[-1],
                    self._vars_skew[-1],
                    f_of_t=self._f_of_t).transformation
-        w_T_n = w_T_n * self.T_tool
+        w_T_n = T_base * w_T_n * T_tool
 
         O_n = w_T_n[:3, 3]
         w_T_0 = st(self._seq_skew[0],
                    self._vars_skew[0],
                    f_of_t=self._f_of_t).transformation
-        w_T_0 = self.T_base * w_T_0
+        w_T_0 = T_base * w_T_0
 
-        Ts = [w_T_0]
-        Js = []
+        Ts, Js = [w_T_0], []
         for k in range(len(self._seq_skew) - 1):
             T = st(self._seq_skew[k + 1],
                    self._vars_skew[k + 1],
                    f_of_t=self._f_of_t).transformation
-            Ts.append(self.T_base * T)
+            Ts.append(T_base * T)
 
             # Get axis index from char
             axis_transform = self._seq_skew[k + 1][len(self._seq_skew[k])]

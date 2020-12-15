@@ -55,3 +55,9 @@ class Robot(ABC):
             self.T_tool = sp.eye(4)
         else:
             self.T_tool = sp.Matrix(T_tool)
+
+    def set_lengths(self, lengths):
+        if lengths is None:
+            self._ls = (0.8, 0.8)
+        else:
+            self._ls = lengths

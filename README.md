@@ -88,6 +88,25 @@ Check out `FanucJacobians.md` for the solution description:
 
 ![Fanuc singularity](images/ballerina_singularity.png)
 
+### Fanuc calibration
+
+`python fanuc_calibration.py`
+
+If you want to see how it is possible to calibrate a robotic manipulator.
+Check out `GeometricCalibration.md` for the description
+
+#### Before
+```
+Distance RMS (mm): 13.154
+Max Distance diff (mm): 18.49
+```
+
+#### After
+```
+Distance RMS (mm): 0.531
+Max Distance diff (mm): 1.32
+```
+
 ### Jacobian Calculation
 
 `python jacobian_calculation.py`

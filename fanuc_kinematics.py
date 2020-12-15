@@ -45,7 +45,7 @@ def main():
     #     [0, 0, 0, 1]
     # ])
 
-    qs = robot.inverse_kinematics(T_IK, m=1)
+    qs = robot.inverse_kinematics(T_IK, m=-1, w=1)
 
     print()
     print("IK Qs:")

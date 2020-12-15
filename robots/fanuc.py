@@ -33,15 +33,15 @@ class Fanuc165F(Robot):
             tool frame
     """
 
-    ls = (346.0, 324.0, 312.0, 1075.0, 225.0, 1280.0, 215.0)
-    qs_lim_deg = ((-370.0, 370.0),
-                  (-136.0, 136.0),
-                  (-312.0, 312.0),
-                  (-720.0, 720.0),
-                  (-250.0, 250.0),
-                  (-720.0, 720.0))
+    qs_lim_deg = ((-185.0, 185.0),
+                  (-60.0, 76.0),
+                  (-156.0, 156.0),
+                  (-360.0, 360.0),
+                  (-125.0, 125.0),
+                  (-360.0, 360.0))
 
-    def __init__(self, T_base=None, T_tool=None):
+    def __init__(self, T_base=None, T_tool=None,
+                 lengths=None, save=True, offsets=None, directions=None):
         """
         Prepares all necessary values and loads pickled matrices
 
@@ -52,26 +52,51 @@ class Fanuc165F(Robot):
                 frame to the tool frame
         """
         self.set_transforms(T_base, T_tool)
+        self.set_lengths(lengths)
+        self.set_joint_offsets(offsets)
+        self.set_joint_directions(directions)
 
         self._generate_value_pairs()
         self._calculate_limits_radians()
-
-        self.fk_data_path = Path("robots/data/fanuc_forward_kinematics.pkl")
-        self.ik_data_path = Path("robots/data/fanuc_inverse_kinematics.pkl")
+        self._save = save
+        if self._save:
+            self.fk_data_path = Path(
+                "robots/data/fanuc_forward_kinematics.pkl")
+            self.ik_data_path = Path(
+                "robots/data/fanuc_inverse_kinematics.pkl")
         self._precalculate_data()
 
         # self._tp = TransformationPlotter()
+
+    def set_lengths(self, lengths):
+        if lengths is None:
+            self._ls = (346.0, 324.0, 312.0, 1075.0, 225.0, 1280.0, 215.0)
+        else:
+            self._ls = lengths
+
+    def set_joint_offsets(self, offsets):
+        if offsets is None:
+            angle = np.pi / 2
+            self.qs_offsets = np.array([0.0, -angle, angle, 0.0, 0.0, 0.0])
+        else:
+            self.qs_offsets = offsets
+
+    def set_joint_directions(self, directions):
+        if directions is None:
+            self.qs_directions = np.array([1, 1, -1, -1, -1, -1])
+        else:
+            self.qs_directions = directions
 
     def _generate_value_pairs(self):
         """
         Generates name-value tuples for sympy substitution
         """
         value_pairs = []
-        for i in range(len(self.ls)):
-            value_pairs.append((f"l_{i}", self.ls[i]))
+        for i in range(len(self._ls)):
+            value_pairs.append((f"l_{i}", self._ls[i]))
 
-        self.d = np.sqrt(self.ls[4] * self.ls[4] + self.ls[5] * self.ls[5])
-        self.dq = np.arctan2(self.ls[4], self.ls[5])
+        self.d = np.sqrt(self._ls[4] * self._ls[4] + self._ls[5] * self._ls[5])
+        self.dq = np.arctan2(self._ls[4], self._ls[5])
 
         value_pairs.append(("d", self.d))
         value_pairs.append(("dq", self.dq))
@@ -89,24 +114,23 @@ class Fanuc165F(Robot):
         """
         Precalculates and pickles constant matrices
         """
-        if self.fk_data_path.is_file():
+        if self._save and self.fk_data_path.is_file():
             with open(self.fk_data_path, 'rb') as input:
                 self._Ts = pickle.load(input)
         else:
             # FK without dq substitution
-            # self._Ts = st("TzRzTzTxRyTxRyTzTxRxRyRxTx",
-            #              ['l_0', 'q_0', 'l_1', 'l_2', 'q_1',
-            #               'l_3', 'q_2', 'l_4', 'l_5', 'q_3',
-            #               'q_4', 'q_5', 'l_6'])
+            self._Ts = st("TzRzTzTxRyTxRyTzTxRxRyRxTx",
+                          ['l_0', 'q_0', 'l_1', 'l_2', 'q_1',
+                           'l_3', 'q_2', 'l_4', 'l_5', 'q_3',
+                           'q_4', 'q_5', 'l_6'])
 
-            self._Ts = st("TzRzTzTxRyTxRyRyiTxRyRxRyRxTx",
-                          ['l_0', "q_0", "l_1", "l_2",
-                           "q_1", "l_3", "q_2", "dq",
-                           "d", "dq", "q_3", "q_4", "q_5", "l_6"])
-
+            # self._Ts = st("TzRzTzTxRyTxRyRyiTxRyRxRyRxTx",
+            #               ['l_0', "q_0", "l_1", "l_2",
+            #                "q_1", "l_3", "q_2", "dq",
+            #                "d", "dq", "q_3", "q_4", "q_5", "l_6"])
             self._Ts.substitute(self._value_pairs)
 
-        if self.ik_data_path.is_file():
+        if self._save and self.ik_data_path.is_file():
             with open(self.ik_data_path, 'rb') as input:
                 self._T_012_inv = pickle.load(input)
         else:
@@ -116,11 +140,11 @@ class Fanuc165F(Robot):
             self._T_012_inv = T_012.inv()
 
         # Save data
-        if not self.fk_data_path.is_file():
+        if self._save and not self.fk_data_path.is_file():
             with open(self.fk_data_path, 'wb') as output:
                 pickle.dump(self._Ts, output, pickle.HIGHEST_PROTOCOL)
 
-        if not self.ik_data_path.is_file():
+        if self._save and not self.ik_data_path.is_file():
             with open(self.ik_data_path, 'wb') as output:
                 pickle.dump(self._T_012_inv, output, pickle.HIGHEST_PROTOCOL)
 
@@ -135,6 +159,9 @@ class Fanuc165F(Robot):
         Returns:
             4x4 np.ndarray: Homogeneous tool pose
         """
+        # Account for the opposite rotation directions and offsets
+        q_values = np.multiply(q_values, self.qs_directions) + self.qs_offsets
+
         qs_dict = {}
         for i in range(len(q_values)):
             qs_dict[sp.symbols(f"q_{i}")] = q_values[i]
@@ -166,7 +193,7 @@ class Fanuc165F(Robot):
 
         self._tp.plot_numeric_frames(frames)
 
-    def inverse_kinematics(self, T, m=1, k=1):
+    def inverse_kinematics(self, T, m=1, k=1, w=0):
         """
         Calculates inverse kinematics joint values qs from pose T
 
@@ -174,6 +201,7 @@ class Fanuc165F(Robot):
             T (4x4 array like): Homogeneous pose matrix
             m (int, optional): Elbow up flag. Should be -1 or 1
             k (int, optional): Square root sign flag. Should be -1 or 1
+            w (int, optional): Wrist rotation flag. Should be -1 or 1
 
         Returns:
             np.ndarray: Joint values, corresponding to T
@@ -187,17 +215,22 @@ class Fanuc165F(Robot):
             print("[WARNING] k can only be -1 or 1. Defaulting to 1")
             k = 1
 
+        if abs(w) != 1 and w != 0:
+            print("[WARNING] w can only be -1, 0 or 1. Defaulting to 1")
+            w = 1
+
         T = sp.Matrix(T)
-        Tz_inv = Transformation.get_Tz_inv(self.ls[0])
-        Tx_inv = Transformation.get_Tx_inv(self.ls[6])
+        Tz_inv = Transformation.get_Tz_inv(self._ls[0])
+        Tx_inv = Transformation.get_Tx_inv(self._ls[6])
         T_0 = Tz_inv * self.T_base.inv() * T * self.T_tool.inv() * Tx_inv
 
         x, y, z = float(T_0[0, 3]), float(T_0[1, 3]), float(T_0[2, 3])
-        x_prime = k * np.sqrt(x**2 + y**2) - self.ls[2]
-        z_prime = self.ls[1] - z
+        x_prime = k * np.sqrt(x**2 + y**2) - self._ls[2]
+        z_prime = self._ls[1] - z
 
-        psi_cos_numerator = x_prime**2 + z_prime**2 - self.d**2 - self.ls[3]**2
-        psi_cos_denominator = 2.0 * self.d * self.ls[3]
+        psi_cos_numerator = x_prime**2 + \
+            z_prime**2 - self.d**2 - self._ls[3]**2
+        psi_cos_denominator = 2.0 * self.d * self._ls[3]
         psi_cos = psi_cos_numerator / psi_cos_denominator
 
         # Check if the given position is reachable
@@ -207,14 +240,15 @@ class Fanuc165F(Robot):
 
         psi = -m * np.arccos(psi_cos)
         beta = np.arctan2(self.d * np.sin(m * psi),
-                          self.ls[3] + self.d * np.cos(psi))
+                          self._ls[3] + self.d * np.cos(psi))
         gamma = np.arctan2(z_prime, x_prime)
 
         q_0 = np.arctan2(y, x)
         q_1 = gamma - m * beta
         q_2 = psi + self.dq
 
-        A = self.d * np.cos(q_1 + psi) + self.ls[2] + self.ls[3] * np.cos(q_1)
+        A = self.d * np.cos(q_1 + psi) + \
+            self._ls[2] + self._ls[3] * np.cos(q_1)
 
         if abs(A) < self.epsilon:
             print("[INFO] Up position case. q_0 - any angle. Setting it to 0")
@@ -239,6 +273,9 @@ class Fanuc165F(Robot):
             q_3 = np.arctan2(r_21, -r_31)
             q_5 = np.arctan2(r_12, r_13)
 
+            q_3 -= w * np.pi
+            q_5 -= w * np.pi
+
             if abs(r_13) > self.epsilon:
                 q_4 = np.arctan2(r_13 / np.cos(q_5), r_11)
             else:
@@ -250,6 +287,7 @@ class Fanuc165F(Robot):
             q_5 = 0.0
 
         qs = np.array([q_0, q_1, q_2, q_3, q_4, q_5])
+        qs = np.multiply(qs - self.qs_offsets, self.qs_directions)
 
         out_of_limits = False
         for i in range(len(qs)):
