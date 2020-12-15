@@ -1,5 +1,5 @@
 # Robotic manipulators
-Calculation of Forward Kinematics (FK), Inverse Kinematics (IK), Jacobians, Dynamic Modeling (Euler-Lagrange, Newton-Euler), and trajectory generation (Joint Space polynomial, Joint Space P2P, Cartesian Space Linear) for robotic manipulators.
+Calculation of Forward Kinematics (FK), Inverse Kinematics (IK), Jacobians, Dynamic Modeling (Euler-Lagrange, Newton-Euler), trajectory generation (Joint Space polynomial, Joint Space P2P, Cartesian Space Linear), and geometric calibration for robotic manipulators.
 
 ## Repo contents
 
@@ -88,7 +88,7 @@ Check out `FanucJacobians.md` for the solution description:
 
 ![Fanuc singularity](images/ballerina_singularity.png)
 
-### Fanuc calibration
+### Fanuc Calibration
 
 `python fanuc_calibration.py`
 
